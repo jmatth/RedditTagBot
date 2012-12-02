@@ -37,7 +37,7 @@ hot = r.get_subreddit(subreddit).get_hot(limit=post_limit)
 
 for post in hot:
 	for check in reg_list:
-		if (reg_list[check]['url'].match(post.url) || reg_list[check]['title'].match(post.title)):
+		if (reg_list[check]['url'].match(post.url)) or (reg_list[check]['title'].match(post.title)):
 			post.set_flair(flair_css_class=reg_list[check]['css_class'])
 			break
 	
