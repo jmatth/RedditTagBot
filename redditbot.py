@@ -29,9 +29,9 @@ reg_list['geekwhack'] = {'title': re.compile('[Gg]eekhack'), 'url': re.compile('
 
 reg_list['imgur'] = {'title': re.compile('imgur'), 'url': re.compile('.*imgur.*'), 'css_class': 'imgur'}
 
-r = praw.Reddit(user_agent="TransistorRevolt testing the /r/mechanicalkeyboards bot.")
+r = praw.Reddit(user_agent="TransistorRevolt testing the /r/mechanicalkeyboards bot.", site_name='mechanicalkeyboards')
 
-r = praw.Reddit(user_agent="TransistorRevolt testing the mechanicalkeyboards bot.")
+r.login()
 
 hot = r.get_subreddit(subreddit).get_hot(limit=post_limit)
 
