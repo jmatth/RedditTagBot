@@ -1,12 +1,11 @@
-# Import the reddit API wrapper
+# Reddit API
 import praw
-# Import regex module
 import re
-# Import os for touching lock files
 import os
-# Import datetime for timestamping lock files
 from datetime import datetime
 import sys
+import ConfigParser
+import pymongo
 
 lockpath = '/var/redditbot/mechanicalkeyboards.lock'
 
