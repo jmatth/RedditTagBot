@@ -7,7 +7,7 @@ import sys
 import ConfigParser
 import pymongo
 
-def loadTagConfig(configFile = "redditbot_tags.ini"):
+def loadTagConfig(configFile = "tags.ini"):
 	retDict = dict()
 
 	conf = ConfigParser.ConfigParser()
