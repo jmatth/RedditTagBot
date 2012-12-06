@@ -55,15 +55,15 @@ for post in hot:
 	for check in reg_list:
 		if ('url' in reg_list[check]) and (re.match(reg_list[check]['url'], post.url, re.IGNORECASE)):
 			post.set_flair(flair_css_class=reg_list[check]['css_class'])
-			collection.insert({'post_id': post.id, 'match_type': 'url', 'matched_with': reg_list[check]['url'], 'tagged_as': reg_list[check]['css_class']})
+			collection.insert({'post_id': post.id, 'match_type': 'url', 'matched_with': reg_list[check]['url'], 'tagged_as': reg_list[check]['css_class'], 'processed_on': datetime.utcnow()})
 			break
 		elif ('title' in reg_list[check]) and (re.match(reg_list[check]['title'], post.url, re.IGNORECASE)):
 			post.set_flair(flair_css_class=reg_list[check]['css_class'])
-			collection.insert({'post_id': post.id, 'match_type': 'title', 'matched_with': reg_list[check]['title'], 'tagged_as': reg_list[check]['css_class']})
+			collection.insert({'post_id': post.id, 'match_type': 'title', 'matched_with': reg_list[check]['title'], 'tagged_as': reg_list[check]['css_class'], 'processed_on': datetime.utcnow()})
 			break
 
 	else:
-		collection.insert({'post_id': post.id, 'match_type': 'none'})
+		collection.insert({'post_id': post.id, 'match_type': 'none', 'processed_on': datetime.utcnow()})
 	
 
 os.remove(lockpath)
