@@ -64,7 +64,8 @@ for subreddit in sub_reddits:
 			password=sub_reddits[subreddit]['password'])
 
 	#Get hot posts
-	hot = r.get_subreddit(subreddit).get_hot(limit=sub_reddits[subreddit]['post_limit'])
+	hot = (r.get_subreddit(subreddit)
+			.get_hot(limit=sub_reddits[subreddit]['post_limit']))
 
 	for post in hot:
 
@@ -73,16 +74,27 @@ for subreddit in sub_reddits:
 			continue
 
 		for check in reg_list:
-			if ('url' in reg_list[check]) and (re.match(reg_list[check]['url'], post.url, re.IGNORECASE)):
+			if ('url' in reg_list[check]) and \
+			(re.match(reg_list[check]['url'], post.url, re.IGNORECASE)):
 				post.set_flair(flair_css_class=reg_list[check]['css_class'])
-				collection.insert({'post_id': post.id, 'match_type': 'url', 'matched_with': reg_list[check]['url'], 'tagged_as': reg_list[check]['css_class'], 'processed_on': datetime.utcnow()})
+				collection.insert({'post_id': post.id, 'match_type': 'url',
+									'matched_with': reg_list[check]['url'],
+									'tagged_as': reg_list[check]['css_class'],
+									'processed_on': datetime.utcnow()})
 				break
-			elif ('title' in reg_list[check]) and (re.match(reg_list[check]['title'], post.url, re.IGNORECASE)):
+			elif ('title' in reg_list[check]) and \
+			(re.match(reg_list[check]['title'], post.url, re.IGNORECASE)):
 				post.set_flair(flair_css_class=reg_list[check]['css_class'])
-				collection.insert({'post_id': post.id, 'match_type': 'title', 'matched_with': reg_list[check]['title'], 'tagged_as': reg_list[check]['css_class'], 'processed_on': datetime.utcnow()})
+				collection.insert({'post_id': post.id,
+									'match_type': 'title',
+									'matched_with': reg_list[check]['title'],
+									'tagged_as': reg_list[check]['css_class'],
+									'processed_on': datetime.utcnow()})
 				break
 
 		else:
-			collection.insert({'post_id': post.id, 'match_type': 'none', 'processed_on': datetime.utcnow()})
+			collection.insert({'post_id': post.id,
+								'match_type': 'none',
+								'processed_on': datetime.utcnow()})
 
 os.remove(lockpath)
