@@ -4,66 +4,85 @@ import re
 import os
 from datetime import datetime
 import sys
-import ConfigParser
+import yaml
 import pymongo
 
-def loadTagConfig(configFile = "tags.ini"):
-	retDict = dict()
+# Load the ini into a dictionary for either the
+# main config values or the tags to look for.
+def loadConfig(section='main'):
 
-	conf = ConfigParser.ConfigParser()
-	conf.read(configFile)
-
-	for section in conf.sections():
-		retDict[section] = dict(conf.items(section))
+	retDict = yaml.load(file('tagbot.yaml', 'r'))[section]
 
 	return retDict
 
-lockpath = '/var/redditbot/mechanicalkeyboards.lock'
+try:
+	mainConfig = loadConfig()
+except AttributError:
+	print "Config file not found, not readable, or incomplete."
+	sys.exit()
 
-subreddit = 'mechanicalkeyboards'
+try:
+	lockpath = mainConfig['lockpath']
+	database = mainConfig['database']
 
-post_limit = 5
+except KeyError:
+	print "Missing value from main_tagbot_config"
+	sys.exit()
 
 if os.path.exists(lockpath):
 	print "Already running"
 	sys.exit()
 
-#Open connection to database
-connection = pymongo.Connection()
-db = connection.redditbot_mechanicalkeyboards_test
-collection = db.processed_posts
-
 # Write a lockfile to prevent another instance from starting
 # while this one is still running.
 lockfile = open(lockpath, 'w')
-lockfile.write('Bot instance started at: ' + datetime.now().strftime("%H:%M:%S %m/%d/%y") + "\n")
+lockfile.write('Bot instance started at: '
+				+ datetime.now().strftime("%H:%M:%S %m/%d/%y") + "\n")
 
-reg_list = loadTagConfig()
+#Open connection to database
+connection = pymongo.Connection()
+db = connection[database]
 
-r = praw.Reddit(user_agent="TransistorRevolt testing the /r/mechanicalkeyboards bot.", site_name='mechanicalkeyboards')
+#Now we load the subreddits we want to process.
+#Underscore used in variable name to reduce the
+#risk of confusing typos.
+sub_reddits = loadConfig('subreddits')
 
-r.login()
+for subreddit in sub_reddits:
+	#Use a collection matching the subreddit name
+	collection = db[subreddit]
 
-hot = r.get_subreddit(subreddit).get_hot(limit=post_limit)
+	#Load subreddit specific configs
+	reg_list = sub_reddits[subreddit]['tags']
 
-for post in hot:
+	#Login to reddit
+	r = praw.Reddit(user_agent=sub_reddits[subreddit]['username']
+					+ " running the reddit tagbot for /r/"
+					+ subreddit + ".")
 
-	#Skip post if it's already been checked.
-	if (collection.find_one({'post_id': post.id})):
-		continue
+	r.login(username=sub_reddits[subreddit]['username'],
+			password=sub_reddits[subreddit]['password'])
 
-	for check in reg_list:
-		if ('url' in reg_list[check]) and (re.match(reg_list[check]['url'], post.url, re.IGNORECASE)):
-			post.set_flair(flair_css_class=reg_list[check]['css_class'])
-			collection.insert({'post_id': post.id, 'match_type': 'url', 'matched_with': reg_list[check]['url'], 'tagged_as': reg_list[check]['css_class'], 'processed_on': datetime.utcnow()})
-			break
-		elif ('title' in reg_list[check]) and (re.match(reg_list[check]['title'], post.url, re.IGNORECASE)):
-			post.set_flair(flair_css_class=reg_list[check]['css_class'])
-			collection.insert({'post_id': post.id, 'match_type': 'title', 'matched_with': reg_list[check]['title'], 'tagged_as': reg_list[check]['css_class'], 'processed_on': datetime.utcnow()})
-			break
+	#Get hot posts
+	hot = r.get_subreddit(subreddit).get_hot(limit=sub_reddits[subreddit]['post_limit'])
 
-	else:
-		collection.insert({'post_id': post.id, 'match_type': 'none', 'processed_on': datetime.utcnow()})
-	
+	for post in hot:
+
+		#Skip post if it's already been checked.
+		if (collection.find_one({'post_id': post.id})):
+			continue
+
+		for check in reg_list:
+			if ('url' in reg_list[check]) and (re.match(reg_list[check]['url'], post.url, re.IGNORECASE)):
+				post.set_flair(flair_css_class=reg_list[check]['css_class'])
+				collection.insert({'post_id': post.id, 'match_type': 'url', 'matched_with': reg_list[check]['url'], 'tagged_as': reg_list[check]['css_class'], 'processed_on': datetime.utcnow()})
+				break
+			elif ('title' in reg_list[check]) and (re.match(reg_list[check]['title'], post.url, re.IGNORECASE)):
+				post.set_flair(flair_css_class=reg_list[check]['css_class'])
+				collection.insert({'post_id': post.id, 'match_type': 'title', 'matched_with': reg_list[check]['title'], 'tagged_as': reg_list[check]['css_class'], 'processed_on': datetime.utcnow()})
+				break
+
+		else:
+			collection.insert({'post_id': post.id, 'match_type': 'none', 'processed_on': datetime.utcnow()})
 
 os.remove(lockpath)

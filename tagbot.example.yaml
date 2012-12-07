@@ -1,0 +1,14 @@
+main:
+    lockpath: /tmp/tagbot.lock
+    database: reddit_tagbot_db
+
+subreddits:
+    mechanicalkeyboards:
+        username: AzureDiamond
+        password: hunter2
+        post_limit: 10
+        tags:
+            sometag:
+                title: .*title_regex.*
+                url: .*urlregex\.org.*
+                css_class: sometag

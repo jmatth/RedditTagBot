@@ -1,2 +1,2 @@
-*.ini
-!*.example.ini
+*.yaml
+!*.example.yaml
