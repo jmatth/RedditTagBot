@@ -54,7 +54,7 @@ for subreddit in sub_reddits:
 	collection = db[subreddit]
 
 	#Load subreddit specific configs
-	reg_list = sub_reddits[subreddit]['tags']
+	tag_list = sub_reddits[subreddit]['tags']
 
 	#Login to reddit
 	r = praw.Reddit(user_agent=sub_reddits[subreddit]['username']
@@ -74,24 +74,49 @@ for subreddit in sub_reddits:
 		if (collection.find_one({'post_id': post.id})):
 			continue
 
-		for check in reg_list:
-			if ('url' in reg_list[check]) and \
-			(re.match(reg_list[check]['url'], post.url, re.IGNORECASE)):
-				post.set_flair(flair_css_class=reg_list[check]['css_class'])
-				collection.insert({'post_id': post.id, 'match_type': 'url',
-									'matched_with': reg_list[check]['url'],
-									'tagged_as': reg_list[check]['css_class'],
-									'processed_on': datetime.utcnow()})
-				break
-			elif ('title' in reg_list[check]) and \
-			(re.match(reg_list[check]['title'], post.url, re.IGNORECASE)):
-				post.set_flair(flair_css_class=reg_list[check]['css_class'])
-				collection.insert({'post_id': post.id,
-									'match_type': 'title',
-									'matched_with': reg_list[check]['title'],
-									'tagged_as': reg_list[check]['css_class'],
-									'processed_on': datetime.utcnow()})
-				break
+		for check in tag_list:
+			for condition in tag_list[check]['conditions']:
+
+				# Booleans used to keep track of various conditions.
+				match_url = False
+				match_title = False
+				match_self = False
+
+				if ('url' in tag_list[check]['conditions'][condition]):
+					if (re.match(tag_list[check]['conditions'][condition]['url'], post.url,
+						re.IGNORECASE)):
+						match_url = True
+					else:
+						match_url = False
+				else:
+					match_url = True
+
+				if ('title' in tag_list[check]['conditions'][condition]):
+					if (re.match(tag_list[check]['conditions'][condition]['title'],
+						post.title, re.IGNORECASE)):
+						match_title = True
+					else:
+						match_title = False
+				else:
+					match_title = True
+
+				if ('selftext' in tag_list[check]['conditions'][condition]):
+					if (re.match(tag_list[check]['conditions'][condition]['selftext'],
+						post.selftext, re.IGNORECASE)):
+						match_self = True
+					else:
+						match_self = False
+				else:
+					match_self = True
+
+				if match_url and match_self and match_title:
+					print ("Tagging \"" + post.title + "\" with "
+							+ tag_list[check]['css_class'] + ".")
+					post.set_flair(flair_css_class=tag_list[check]['css_class'])
+					collection.insert({'post_id': post.id,
+					'tagged_as': tag_list[check]['css_class'],
+					'processed_on': datetime.utcnow()})
+					break
 
 		else:
 			collection.insert({'post_id': post.id,
