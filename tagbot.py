@@ -18,7 +18,7 @@ def loadConfig(section='main'):
 
 try:
 	mainConfig = loadConfig()
-except AttributError:
+except AttributeError:
 	print "Config file not found, not readable, or incomplete."
 	sys.exit()
 
