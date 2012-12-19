@@ -11,7 +11,8 @@ import pymongo
 # main config values or the tags to look for.
 def loadConfig(section='main'):
 
-	retDict = yaml.load(file('tagbot.yaml', 'r'))[section]
+	path = str(sys.path[0])
+	retDict = yaml.load(file(path+'/tagbot.yaml', 'r'))[section]
 
 	return retDict
 
