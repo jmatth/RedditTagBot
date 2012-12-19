@@ -74,7 +74,12 @@ for subreddit in sub_reddits:
 		if (collection.find_one({'post_id': post.id})):
 			continue
 
+		matched=False
 		for check in tag_list:
+			#Break out if the previous iteration found a match
+			if matched:
+				break
+
 			for condition in tag_list[check]['conditions']:
 
 				# Booleans used to keep track of various conditions.
@@ -116,9 +121,10 @@ for subreddit in sub_reddits:
 					collection.insert({'post_id': post.id,
 					'tagged_as': tag_list[check]['css_class'],
 					'processed_on': datetime.utcnow()})
+					matched=True
 					break
-
-		else:
+		if not matched:
+			print "No match found for " + post.id + "."
 			collection.insert({'post_id': post.id,
 								'match_type': 'none',
 								'processed_on': datetime.utcnow()})
