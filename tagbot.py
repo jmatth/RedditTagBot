@@ -88,8 +88,9 @@ for subreddit in sub_reddits:
 				match_self = False
 
 				if ('url' in tag_list[check]['conditions'][condition]):
-					if (re.match(tag_list[check]['conditions'][condition]['url'], post.url,
-						re.IGNORECASE)):
+					if (re.match(tag_list[check]['conditions'][condition]['url'],
+						post.url, re.IGNORECASE)):
+
 						match_url = True
 					else:
 						match_url = False
