@@ -83,50 +83,38 @@ for subreddit in sub_reddits:
 
             for condition in tag_list[check]['conditions']:
 
-                # Booleans used to keep track of various conditions.
-                match_url = False
-                match_title = False
-                match_self = False
-
                 if ('url' in tag_list[check]['conditions'][condition]):
-                    if (re.match(tag_list[check]['conditions'][condition]['url'],
-                        post.url, re.IGNORECASE)):
-
-                        match_url = True
-                    else:
-                        match_url = False
-                else:
-                    match_url = True
+                    if not (re.match(
+                        tag_list[check]['conditions'][condition]['url'],
+                            post.url, re.IGNORECASE)):
+                        continue
 
                 if ('title' in tag_list[check]['conditions'][condition]):
-                    if (re.match(tag_list[check]['conditions'][condition]['title'],
-                        post.title, re.IGNORECASE)):
-                        match_title = True
-                    else:
-                        match_title = False
-                else:
-                    match_title = True
+                    if not (re.match(
+                        tag_list[check]['conditions'][condition]['title'],
+                            post.title, re.IGNORECASE)):
+                        continue
 
                 if ('selftext' in tag_list[check]['conditions'][condition]):
-                    if (re.match(tag_list[check]['conditions'][condition]['selftext'],
-                        post.selftext, re.IGNORECASE)):
-                        match_self = True
-                    else:
-                        match_self = False
-                else:
-                    match_self = True
+                    if not (re.match(
+                        tag_list[check]['conditions'][condition]['selftext'],
+                            post.selftext, re.IGNORECASE)):
+                        continue
 
-                if match_url and match_self and match_title:
-                    print ("Tagging \"" + post.title + "\" with " +
-                           tag_list[check]['css_class'] + ".")
-                    post.set_flair(flair_css_class=
-                                   tag_list[check]['css_class'])
-                    collection.insert(
-                        {'post_id': post.id,
-                         'tagged_as': tag_list[check]['css_class'],
-                         'processed_on': datetime.utcnow()})
-                    matched = True
-                    break
+                # No continues were hit, it's a match.
+                print ("Tagging \"" + post.title + "\" with " +
+                       tag_list[check]['css_class'] + ".")
+
+                post.set_flair(flair_css_class=
+                               tag_list[check]['css_class'])
+
+                collection.insert(
+                    {'post_id': post.id,
+                     'tagged_as': tag_list[check]['css_class'],
+                     'processed_on': datetime.utcnow()})
+
+                matched = True
+                break
         if not matched:
             print "No match found for " + post.id + "."
             collection.insert({'post_id': post.id,
