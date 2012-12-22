@@ -7,6 +7,7 @@ import sys
 import yaml
 import pymongo
 
+
 # Load the ini into a dictionary for either the
 # main config values or the tags to look for.
 def loadConfig(section='main'):
@@ -37,8 +38,8 @@ if os.path.exists(lockpath):
 # Write a lockfile to prevent another instance from starting
 # while this one is still running.
 lockfile = open(lockpath, 'w')
-lockfile.write('Bot instance started at: '
-                + datetime.now().strftime("%H:%M:%S %m/%d/%y") + "\n")
+lockfile.write('Bot instance started at: ' +
+               datetime.now().strftime("%H:%M:%S %m/%d/%y") + "\n")
 
 #Open connection to database
 connection = pymongo.Connection()
@@ -74,7 +75,7 @@ for subreddit in sub_reddits:
         if (collection.find_one({'post_id': post.id})):
             continue
 
-        matched=False
+        matched = False
         for check in tag_list:
             #Break out if the previous iteration found a match
             if matched:
@@ -116,18 +117,20 @@ for subreddit in sub_reddits:
                     match_self = True
 
                 if match_url and match_self and match_title:
-                    print ("Tagging \"" + post.title + "\" with "
-                            + tag_list[check]['css_class'] + ".")
-                    post.set_flair(flair_css_class=tag_list[check]['css_class'])
-                    collection.insert({'post_id': post.id,
-                    'tagged_as': tag_list[check]['css_class'],
-                    'processed_on': datetime.utcnow()})
-                    matched=True
+                    print ("Tagging \"" + post.title + "\" with " +
+                           tag_list[check]['css_class'] + ".")
+                    post.set_flair(flair_css_class=
+                                   tag_list[check]['css_class'])
+                    collection.insert(
+                        {'post_id': post.id,
+                         'tagged_as': tag_list[check]['css_class'],
+                         'processed_on': datetime.utcnow()})
+                    matched = True
                     break
         if not matched:
             print "No match found for " + post.id + "."
             collection.insert({'post_id': post.id,
-                                'match_type': 'none',
-                                'processed_on': datetime.utcnow()})
+                               'match_type': 'none',
+                               'processed_on': datetime.utcnow()})
 
 os.remove(lockpath)
