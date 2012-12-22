@@ -9,6 +9,8 @@ subreddits:
         post_limit: 10
         tags:
             sometag:
-                title: .*title_regex.*
-                url: .*urlregex\.org.*
                 css_class: sometag
+                conditions:
+                    title_with_url:
+                        title: .*title_regex.*
+                        url: .*urlregex\.org.*
