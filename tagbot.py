@@ -103,8 +103,9 @@ for subreddit in sub_reddits:
                         continue
 
                 # No continues were hit, it's a match.
-                print (datetime.utcnow() + ": tagging " + post.id +
-                       " with " + tag_list[check]['css_class'] + ".")
+                print (datetime.now().strftime("%H:%M:%S %m/%d/%y") +
+                       ": tagging " + post.id + " with " +
+                       tag_list[check]['css_class'] + ".")
 
                 post.set_flair(flair_css_class=
                                tag_list[check]['css_class'])
@@ -112,14 +113,15 @@ for subreddit in sub_reddits:
                 collection.insert(
                     {'post_id': post.id,
                      'tagged_as': tag_list[check]['css_class'],
-                     'processed_on': datetime.utcnow()})
+                     'processed_on': datetime.now()})
 
                 matched = True
                 break
         if not matched:
-            print (datetime.utcnow() + ": no match for " + post.id + ".")
+            print (datetime.now().strftime("%H:%M:%S %m/%d/%y") +
+                   ": no match for " + post.id + ".")
             collection.insert({'post_id': post.id,
                                'match_type': 'none',
-                               'processed_on': datetime.utcnow()})
+                               'processed_on': datetime.now()})
 
 os.remove(lockpath)
