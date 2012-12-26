@@ -103,8 +103,8 @@ for subreddit in sub_reddits:
                         continue
 
                 # No continues were hit, it's a match.
-                print ("Tagging \"" + post.title + "\" with " +
-                       tag_list[check]['css_class'] + ".")
+                print (datetime.utcnow() + ": tagging " + post.id +
+                       " with " + tag_list[check]['css_class'] + ".")
 
                 post.set_flair(flair_css_class=
                                tag_list[check]['css_class'])
@@ -117,7 +117,7 @@ for subreddit in sub_reddits:
                 matched = True
                 break
         if not matched:
-            print "No match found for " + post.id + "."
+            print (datetime.utcnow() + ": no match for " + post.id + ".")
             collection.insert({'post_id': post.id,
                                'match_type': 'none',
                                'processed_on': datetime.utcnow()})
