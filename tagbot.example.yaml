@@ -6,7 +6,9 @@ subreddits:
     mechanicalkeyboards:
         username: AzureDiamond
         password: hunter2
-        post_limit: 10
+        hot_limit: 10
+        new_limit: 10
+        top_limit: 10
         tags:
             sometag:
                 css_class: sometag
