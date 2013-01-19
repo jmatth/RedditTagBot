@@ -4,6 +4,7 @@ import praw
 import re
 import os
 from datetime import datetime
+from optparse import OptionParser,OptionGroup
 import sys
 import yaml
 import pymongo
@@ -13,7 +14,20 @@ import pymongo
 # main config values or the tags to look for.
 def main():
     """Wrapper method"""
-    main_config = load_config()
+
+    # Get command line options
+    parser = init_options_parser()
+    (options, args) = parser.parse_args()
+
+    # Cannot have both --test and --silent options set
+    if options.test == True and options.silent == True:
+        print "Options -t and -s are incompatible. Only one or the " \
+              "other may be used"
+        sys.exit(1)
+
+    main_config = load_config(options.configfile)
+
+    sys.exit(1)
 
     try:
         lockpath = main_config['lockpath']
@@ -120,14 +134,17 @@ def process_posts(posts, tags, collection):
                                 'processed_on': datetime.now()})
 
 
-def load_config(section='main'):
+def load_config(configfile=None, section='main'):
     """Load the specified config section, or main by default"""
     try:
-        path = str(sys.path[0])
-        ret_dict = yaml.load(file(path+'/tagbot.yaml', 'r'))[section]
-    except AttributeError:
+        if configfile is not None:
+            ret_dict = yaml.load(file(configfile, 'r'))[section]
+        else:
+            path = str(sys.path[0])
+            ret_dict = yaml.load(file(path+'/tagbot.yaml', 'r'))[section]
+    except (AttributeError, IOError):
         print "Config file not found, not readable, or incomplete."
-        sys.exit()
+        sys.exit(1)
 
     return ret_dict
 
@@ -144,6 +161,19 @@ def write_lockfile(lockpath):
     lockfile.close()
     return True
 
+# Parse options from the command line
+def init_options_parser():
+    parser = OptionParser(usage="%prog [-t|-s] [-c <configfile>]", \
+        description="Reddit bot for automatic tagging and responding " \
+        "to new posts")
+    parser.add_option('-t', '--test', action='store_true', help= \
+        'Print changes without updating the database, changing any ' \
+        'flair, or making any posts')
+    parser.add_option('-s', '--silent', action='store_true', help= \
+        'Silent: Do not print any output')
+    parser.add_option('-c', '--configfile', action='store', help= \
+        'Path to yaml config file')
+    return parser
 
 if __name__ == "__main__":
     main()
