@@ -27,8 +27,6 @@ def main():
 
     main_config = load_config(options.configfile)
 
-    sys.exit(1)
-
     try:
         lockpath = main_config['lockpath']
         db_name = main_config['database']
