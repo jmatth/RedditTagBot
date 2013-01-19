@@ -6,11 +6,17 @@ NOTE: While it is currently usable, it is still under active development and it 
 ## Dependencies
 [Python Reddit API Wrapper (PRAW)](https://github.com/praw-dev/praw)
 
-If you don't already have this, install it with `pip install praw`
+If you don't already have this, install it with `pip install praw`.
 
-MongoDB
+PyYAML
+
+For processing config files.
+
+MongoDB and pyMongo
 
 This is used to store information about posts that have already been processed by the bot. This both acts as a log, and prevents unneeded API calls by skipping any posts that have already been handled.
+
+To install all needed python modules, simply cd into the project directory and run `pip install -r requirements.txt`.
 
 ## Configuration
 Tagbot is configured with a single YAML file with two main sections:
