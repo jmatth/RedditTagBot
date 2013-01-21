@@ -4,7 +4,7 @@ import praw
 import re
 import os
 from datetime import datetime
-from optparse import OptionParser,OptionGroup
+from optparse import OptionParser, OptionGroup
 import sys
 import yaml
 import pymongo
@@ -20,14 +20,14 @@ def main():
     (options, args) = parser.parse_args()
 
     # Cannot have both --test and --silent options set
-    if options.test == True and options.silent == True:
+    if options.test is True and options.silent is True:
         print "Options -t and -s are incompatible. Only one or the " \
               "other may be used"
         sys.exit(1)
 
     if options.test:
         print "Test mode enabled. No changes to database or reddit " \
-            "posts will be made" 
+            "posts will be made"
 
     # load the config file
     main_config = load_config(options.configfile)
@@ -66,7 +66,7 @@ def main():
 
         for category in categories:
             process_posts(category, subreddit_options['tags'],
-                          database[subreddit_name], options.test, 
+                          database[subreddit_name], options.test,
                           options.silent)
 
     os.remove(lockpath)
@@ -118,13 +118,12 @@ def process_posts(posts, tags, collection, test=False, silent=False):
                 # No continues were hit, it's a match.
                 if not silent:
                     print (datetime.now().strftime("%H:%M:%S %m/%d/%y") +
-                            ": tagging " + post.id + " with " +
-                            tags[check]['css_class'] + ".")
+                           ": tagging " + post.id + " with " +
+                           tags[check]['css_class'] + ".")
 
                 # If not in test-mode, update the database and flair
                 if not test:
-                    post.set_flair(flair_css_class=
-                                    tags[check]['css_class'])
+                    post.set_flair(flair_css_class=tags[check]['css_class'])
 
                     collection.insert(
                         {'post_id': post.id,
@@ -137,11 +136,11 @@ def process_posts(posts, tags, collection, test=False, silent=False):
         if not matched:
             if not silent:
                 print (datetime.now().strftime("%H:%M:%S %m/%d/%y") +
-                        ": no match for " + post.id + ".")
+                       ": no match for " + post.id + ".")
             if not test:
                 collection.insert({'post_id': post.id,
-                                    'match_type': 'none',
-                                    'processed_on': datetime.now()})
+                                   'match_type': 'none',
+                                   'processed_on': datetime.now()})
 
 
 def load_config(configfile=None, section='main'):
@@ -172,18 +171,19 @@ def write_lockfile(lockpath):
     lockfile.close()
     return True
 
+
 # Parse options from the command line
 def init_options_parser():
-    parser = OptionParser(usage="%prog [-t|-s] [-c <configfile>]", \
-        description="Reddit bot for automatic tagging and responding " \
-        "to new posts")
-    parser.add_option('-t', '--test', action='store_true', help= \
-        'Print changes without updating the database, changing any ' \
-        'flair, or making any posts')
-    parser.add_option('-s', '--silent', action='store_true', help= \
-        'Silent: Do not print any output')
-    parser.add_option('-c', '--configfile', action='store', help= \
-        'Path to yaml config file')
+    parser = OptionParser(usage="%prog [-t|-s] [-c <configfile>]",
+                          description="Reddit bot for automatic tagging and"
+                          " responding to new posts")
+    parser.add_option('-t', '--test', action='store_true', help='Print changes'
+                      ' without updating the database, changing any flair, or'
+                      ' making any posts')
+    parser.add_option('-s', '--silent', action='store_true',
+                      help='Silent: Do not print any output')
+    parser.add_option('-c', '--configfile', action='store',
+                      help='Path to yaml config file')
     return parser
 
 if __name__ == "__main__":
