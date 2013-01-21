@@ -25,6 +25,11 @@ def main():
               "other may be used"
         sys.exit(1)
 
+    if options.test:
+        print "Test mode enabled. No changes to database or reddit " \
+            "posts will be made" 
+
+    # load the config file
     main_config = load_config(options.configfile)
 
     try:
@@ -47,7 +52,7 @@ def main():
     #Now we load the subreddits we want to process.
     #Underscore used in variable name to reduce the
     #risk of confusing typos.
-    sub_reddits = load_config('subreddits')
+    sub_reddits = load_config(options.configfile, 'subreddits')
 
     for subreddit_name, subreddit_options in sub_reddits.iteritems():
         reddit = praw.Reddit(user_agent=subreddit_options['username']
@@ -61,7 +66,8 @@ def main():
 
         for category in categories:
             process_posts(category, subreddit_options['tags'],
-                          database[subreddit_name])
+                          database[subreddit_name], options.test, 
+                          options.silent)
 
     os.remove(lockpath)
 
@@ -73,7 +79,7 @@ def get_categories(subreddit, subreddit_options):
             subreddit.get_top(limit=subreddit_options['top_limit'])]
 
 
-def process_posts(posts, tags, collection):
+def process_posts(posts, tags, collection, test=False, silent=False):
     """Check a list of posts"""
 
     for post in posts:
@@ -110,40 +116,47 @@ def process_posts(posts, tags, collection):
                         continue
 
                 # No continues were hit, it's a match.
-                print (datetime.now().strftime("%H:%M:%S %m/%d/%y") +
-                        ": tagging " + post.id + " with " +
-                        tags[check]['css_class'] + ".")
+                if not silent:
+                    print (datetime.now().strftime("%H:%M:%S %m/%d/%y") +
+                            ": tagging " + post.id + " with " +
+                            tags[check]['css_class'] + ".")
 
-                post.set_flair(flair_css_class=
-                                tags[check]['css_class'])
+                # If not in test-mode, update the database and flair
+                if not test:
+                    post.set_flair(flair_css_class=
+                                    tags[check]['css_class'])
 
-                collection.insert(
-                    {'post_id': post.id,
-                        'tagged_as': tags[check]['css_class'],
-                        'processed_on': datetime.now()})
+                    collection.insert(
+                        {'post_id': post.id,
+                            'tagged_as': tags[check]['css_class'],
+                            'processed_on': datetime.now()})
 
                 matched = True
                 break
+
         if not matched:
-            print (datetime.now().strftime("%H:%M:%S %m/%d/%y") +
-                    ": no match for " + post.id + ".")
-            collection.insert({'post_id': post.id,
-                                'match_type': 'none',
-                                'processed_on': datetime.now()})
+            if not silent:
+                print (datetime.now().strftime("%H:%M:%S %m/%d/%y") +
+                        ": no match for " + post.id + ".")
+            if not test:
+                collection.insert({'post_id': post.id,
+                                    'match_type': 'none',
+                                    'processed_on': datetime.now()})
 
 
 def load_config(configfile=None, section='main'):
     """Load the specified config section, or main by default"""
     try:
-        if configfile is not None:
-            ret_dict = yaml.load(file(configfile, 'r'))[section]
-        else:
+        if configfile is None:
             path = str(sys.path[0])
-            ret_dict = yaml.load(file(path+'/tagbot.yaml', 'r'))[section]
-    except (AttributeError, IOError):
+            configfile = path+'/tagbot.yaml'
+        ret_dict = yaml.load(file(configfile, 'r'))[section]
+    except AttributeError:
         print "Config file not found, not readable, or incomplete."
         sys.exit(1)
-
+    except IOError:
+        print("Error opening config file at path: " + configfile)
+        sys.exit(1)
     return ret_dict
 
 
