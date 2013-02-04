@@ -12,7 +12,18 @@ subreddits:
         tags:
             sometag:
                 css_class: sometag
+                flair_text: sometext
                 conditions:
                     title_with_url:
                         title: .*title_regex.*
                         url: .*urlregex\.org.*
+
+            sometag2:
+                css_class: sometag2
+                flair_text: sometext2
+                conditions:
+                    title_with_url:
+                        title: .*title_regex.*
+                        selftext: .*self_text_regex.*
+~
+

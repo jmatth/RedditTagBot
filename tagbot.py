@@ -117,13 +117,13 @@ def process_posts(posts, tags, collection, test=False, silent=False):
 
                 # No continues were hit, it's a match.
                 if not silent:
-                    print (datetime.now().strftime("%H:%M:%S %m/%d/%y") +
-                           ": tagging " + post.id + " with " +
-                           tags[check]['css_class'] + ".")
+                    print_post_info(post, "TAGGING with " +
+                                    tags[check]['css_class'] + ".")
 
                 # If not in test-mode, update the database and flair
                 if not test:
-                    post.set_flair(flair_css_class=tags[check]['css_class'])
+                    post.set_flair(flair_css_class=tags[check]['css_class'],
+                                   flair_text=tags[check]['flair_text'])
 
                     collection.insert(
                         {'post_id': post.id,
@@ -135,13 +135,18 @@ def process_posts(posts, tags, collection, test=False, silent=False):
 
         if not matched:
             if not silent:
-                print (datetime.now().strftime("%H:%M:%S %m/%d/%y") +
-                       ": no match for " + post.id + ".")
+                print_post_info(post, "No match found for tagging.")
+
             if not test:
                 collection.insert({'post_id': post.id,
                                    'match_type': 'none',
                                    'processed_on': datetime.now()})
 
+
+def print_post_info(post, msg = ""):
+    """Outputs information about a post submission"""
+    print (datetime.now().strftime("%H:%M:%S %m/%d/%y") + 
+           ": (" + post.id + ") {" + post.title + "} " + msg)
 
 def load_config(configfile=None, section='main'):
     """Load the specified config section, or main by default"""
