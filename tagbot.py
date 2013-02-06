@@ -150,7 +150,8 @@ def process_posts(posts, tags, collection, test=False, silent=False):
 def print_post_info(post, msg = "", prefix = ""):
     """Outputs information about a post submission"""
     print (datetime.now().strftime("%H:%M:%S %m/%d/%y") +
-           ": " + prefix + "(" + post.id + ") {" + post.title + "} " + msg)
+           ": " + prefix + "(" + post.id + ") {" + 
+           post.title.encode('ascii', 'xmlcharrefreplace') + "} " + msg)
 
 def load_config(configfile=None, section='main'):
     """Load the specified config section, or main by default"""
