@@ -96,6 +96,10 @@ def process_posts(posts, tags, collection, test=False, silent=False):
 
             for condition in tags[check]['conditions']:
 
+		# Ignore is the link flair has been set manually
+                if (post.link_flair_css_class is not None):
+                    continue
+
                 if ('url' in tags[check]['conditions'][condition]):
                     if not (re.match(
                         tags[check]['conditions'][condition]['url'],
@@ -118,7 +122,7 @@ def process_posts(posts, tags, collection, test=False, silent=False):
                 # No continues were hit, it's a match.
                 if not silent:
                     print_post_info(post, "TAGGING with " +
-                                    tags[check]['css_class'] + ".")
+                                    tags[check]['css_class'] + ".", "[TAGGED] ")
 
                 # If not in test-mode, update the database and flair
                 if not test:
@@ -135,7 +139,7 @@ def process_posts(posts, tags, collection, test=False, silent=False):
 
         if not matched:
             if not silent:
-                print_post_info(post, "No match found for tagging.")
+                print_post_info(post, "No match found for tagging.", "         ")
 
             if not test:
                 collection.insert({'post_id': post.id,
@@ -143,10 +147,10 @@ def process_posts(posts, tags, collection, test=False, silent=False):
                                    'processed_on': datetime.now()})
 
 
-def print_post_info(post, msg = ""):
+def print_post_info(post, msg = "", prefix = ""):
     """Outputs information about a post submission"""
-    print (datetime.now().strftime("%H:%M:%S %m/%d/%y") + 
-           ": (" + post.id + ") {" + post.title + "} " + msg)
+    print (datetime.now().strftime("%H:%M:%S %m/%d/%y") +
+           ": " + prefix + "(" + post.id + ") {" + post.title + "} " + msg)
 
 def load_config(configfile=None, section='main'):
     """Load the specified config section, or main by default"""
