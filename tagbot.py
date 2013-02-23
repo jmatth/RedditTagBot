@@ -54,22 +54,29 @@ def main():
     #risk of confusing typos.
     sub_reddits = load_config(options.configfile, 'subreddits')
 
-    for subreddit_name, subreddit_options in sub_reddits.iteritems():
-        reddit = praw.Reddit(user_agent=subreddit_options['username']
-                             + " running the reddit tagbot for /r/"
-                             + subreddit_name + ".")
-        reddit.login(username=subreddit_options['username'],
-                     password=subreddit_options['password'])
-        subreddit = reddit.get_subreddit(subreddit_name)
+    # Remove the lockfile and esit for any exceptions thrown by praw
+    # TODO: Catch only praw-specific exception. Currently too general
+    # TODO: tagbot.log path should be obtained from tagbot config file
+    try:
+        for subreddit_name, subreddit_options in sub_reddits.iteritems():
+            reddit = praw.Reddit(user_agent=subreddit_options['username']
+                                 + " running the reddit tagbot for /r/"
+                                 + subreddit_name + ".")
+            reddit.login(username=subreddit_options['username'],
+                         password=subreddit_options['password'])
+            subreddit = reddit.get_subreddit(subreddit_name)
 
-        categories = get_categories(subreddit, subreddit_options)
+            categories = get_categories(subreddit, subreddit_options)
 
-        for category in categories:
-            process_posts(category, subreddit_options['tags'],
-                          database[subreddit_name], options.test,
-                          options.silent)
+            for category in categories:
+                process_posts(category, subreddit_options['tags'],
+                              database[subreddit_name], options.test,
+                              options.silent)
+    except Exception as ex:
+        with open('/tmp/tagbot.log','a') as f:
+            f.write(str(ex) + "\n")
 
-    os.remove(lockpath)
+    remove_lockfile(lockpath)
 
 
 def get_categories(subreddit, subreddit_options):
@@ -181,6 +188,12 @@ def write_lockfile(lockpath):
     lockfile.close()
     return True
 
+def remove_lockfile(lockpath):
+    """Removes the lockfile if it exists"""
+    try:
+        os.remove(lockpath)
+    except OSError:
+        pass
 
 # Parse options from the command line
 def init_options_parser():
